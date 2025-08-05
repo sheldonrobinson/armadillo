@@ -190,12 +190,12 @@ option(HEADER_ONLY "Do not generate the wrapper library" OFF)
 ## cmake -D HEADER_ONLY=true .
 
 if(MSVC)
-  option(STATIC_LIB "Generate static library instead of shared library" ON)
+  option(ARMADILLO_STATIC_LIB "Generate static library instead of shared library" ON)
 else()
-  option(STATIC_LIB "Generate static library instead of shared library" OFF)
+  option(ARMADILLO_STATIC_LIB "Generate static library instead of shared library" OFF)
 endif()
 ## Example use on the command line:
-## cmake -D STATIC_LIB=true .
+## cmake -D ARMADILLO_STATIC_LIB=true .
 
 option(OPENBLAS_PROVIDES_LAPACK "Assume that OpenBLAS provides LAPACK functions" OFF)
 ## Example use on the command line:
@@ -228,13 +228,13 @@ option(BUILD_SMOKE_TEST "Build the smoke test" ON)
 option(ARMADILLO_INSTALL "Install applicatuins and libraries" OFF)
 
 if(MSVC)
-  if(NOT STATIC_LIB)
+  if(NOT ARMADILLO_STATIC_LIB)
     message(STATUS "")
     message(STATUS "*** WARNING: building shared library with MSVC is not supported." )
     message(STATUS "*** WARNING: use manual installation instead; see README for details")
     message(STATUS "")
     
-    set(STATIC_LIB ON)
+    set(ARMADILLO_STATIC_LIB ON)
   endif()
 endif()
 
@@ -260,7 +260,7 @@ message(STATUS "CMAKE_COMPILER_IS_GNUCXX   = ${CMAKE_COMPILER_IS_GNUCXX}"  )
 message(STATUS "")
 message(STATUS "*** options:"                                           )
 message(STATUS "HEADER_ONLY               = ${HEADER_ONLY}"             )
-message(STATUS "STATIC_LIB                = ${STATIC_LIB}"              )
+message(STATUS "ARMADILLO_STATIC_LIB      = ${ARMADILLO_STATIC_LIB}"    )
 message(STATUS "OPENBLAS_PROVIDES_LAPACK  = ${OPENBLAS_PROVIDES_LAPACK}")
 message(STATUS "ALLOW_FLEXIBLAS_LINUX     = ${ALLOW_FLEXIBLAS_LINUX}"   )
 message(STATUS "ALLOW_OPENBLAS_MACOS      = ${ALLOW_OPENBLAS_MACOS}"    )
@@ -572,7 +572,7 @@ message(STATUS "CMAKE_REQUIRED_INCLUDES   = ${CMAKE_REQUIRED_INCLUDES}"  )
 
 
 if(BUILD_WRAPPER)
-  if(STATIC_LIB)
+  if(ARMADILLO_STATIC_LIB)
     set(BUILD_SHARED_LIBS OFF)
   else()
     set(BUILD_SHARED_LIBS ON)
