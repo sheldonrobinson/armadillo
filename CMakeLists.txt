@@ -225,6 +225,7 @@ option(BUILD_SMOKE_TEST "Build the smoke test" ON)
 ## make
 ## ctest
 
+option(ARMADILLO_INSTALL "Install applicatuins and libraries" OFF)
 
 if(MSVC)
   if(NOT STATIC_LIB)
@@ -602,18 +603,19 @@ message(STATUS "CMAKE_INSTALL_BINDIR     = ${CMAKE_INSTALL_BINDIR}"    )
 
 # Note that the trailing / character in "include/" is critical
 
-install(DIRECTORY ${PROJECT_BINARY_DIR}/tmp/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-PATTERN ".git" EXCLUDE
-PATTERN "*.cmake" EXCLUDE
-PATTERN "*~" EXCLUDE
-PATTERN "*orig" EXCLUDE
-)
+if(ARMADILLO_INSTALL)
+	install(DIRECTORY ${PROJECT_BINARY_DIR}/tmp/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+	PATTERN ".git" EXCLUDE
+	PATTERN "*.cmake" EXCLUDE
+	PATTERN "*~" EXCLUDE
+	PATTERN "*orig" EXCLUDE
+	)
 
-install(TARGETS armadillo EXPORT ArmadilloLibraryDepends
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-  
+	install(TARGETS armadillo EXPORT ArmadilloLibraryDepends
+	  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
 ## smoke test
 
 if(BUILD_SMOKE_TEST)
@@ -639,7 +641,9 @@ else()
   
   message(STATUS "*** generating '${PROJECT_BINARY_DIR}/tmp/misc/armadillo.pc'")
   configure_file(${PROJECT_BINARY_DIR}/tmp/misc/armadillo.pc.in "${PROJECT_BINARY_DIR}/tmp/misc/armadillo.pc" @ONLY)
-  install(FILES "${PROJECT_BINARY_DIR}/tmp/misc/armadillo.pc" DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+  if(ARMADILLO_INSTALL)
+	install(FILES "${PROJECT_BINARY_DIR}/tmp/misc/armadillo.pc" DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+  endif()
 endif()
 
 
@@ -669,11 +673,12 @@ message(STATUS "Generating '${PROJECT_BINARY_DIR}/ArmadilloConfigVersion.cmake'"
 configure_file(${PROJECT_SOURCE_DIR}/cmake_aux/InstallFiles/ArmadilloConfigVersion.cmake.in
   "${PROJECT_BINARY_DIR}/ArmadilloConfigVersion.cmake" @ONLY)
 
-# Install the export set for use with the install-tree
-install(EXPORT ArmadilloLibraryDepends DESTINATION
-  "${CMAKE_INSTALL_DATADIR}/Armadillo/CMake"
-  COMPONENT dev)
-
+if(ARMADILLO_INSTALL)
+	# Install the export set for use with the install-tree
+	install(EXPORT ArmadilloLibraryDepends DESTINATION
+	  "${CMAKE_INSTALL_DATADIR}/Armadillo/CMake"
+	  COMPONENT dev)
+endif()
 
 ## GLOBAL INSTALL FILES
 # Create ArmadilloConfig.cmake file for the use from the install tree
@@ -692,8 +697,10 @@ message(STATUS "Generating '${PROJECT_BINARY_DIR}/InstallFiles/ArmadilloConfigVe
 configure_file(${PROJECT_SOURCE_DIR}/cmake_aux/InstallFiles/ArmadilloConfigVersion.cmake.in
   "${PROJECT_BINARY_DIR}/InstallFiles/ArmadilloConfigVersion.cmake" @ONLY)
 
-# Install files to be found by cmake users with find_package()
-install(FILES
-  "${PROJECT_BINARY_DIR}/InstallFiles/ArmadilloConfig.cmake"
-  "${PROJECT_BINARY_DIR}/InstallFiles/ArmadilloConfigVersion.cmake"
-  DESTINATION "${ARMADILLO_CMAKE_DIR}" COMPONENT dev)
+if(ARMADILLO_INSTALL)
+	# Install files to be found by cmake users with find_package()
+	install(FILES
+	  "${PROJECT_BINARY_DIR}/InstallFiles/ArmadilloConfig.cmake"
+	  "${PROJECT_BINARY_DIR}/InstallFiles/ArmadilloConfigVersion.cmake"
+	  DESTINATION "${ARMADILLO_CMAKE_DIR}" COMPONENT dev)
+endif()
