@@ -190,12 +190,12 @@ option(HEADER_ONLY "Do not generate the wrapper library" OFF)
 ## cmake -D HEADER_ONLY=true .
 
 if(MSVC)
-  option(STATIC_LIB "Generate static library instead of shared library" ON)
+  option(ARMADILLO_STATIC_LIB "Generate static library instead of shared library" ON)
 else()
-  option(STATIC_LIB "Generate static library instead of shared library" OFF)
+  option(ARMADILLO_STATIC_LIB "Generate static library instead of shared library" OFF)
 endif()
 ## Example use on the command line:
-## cmake -D STATIC_LIB=true .
+## cmake -D ARMADILLO_STATIC_LIB=true .
 
 option(OPENBLAS_PROVIDES_LAPACK "Assume that OpenBLAS provides LAPACK functions" OFF)
 ## Example use on the command line:
@@ -225,15 +225,16 @@ option(BUILD_SMOKE_TEST "Build the smoke test" ON)
 ## make
 ## ctest
 
+option(ARMADILLO_INSTALL "Install applicatuins and libraries" OFF)
 
 if(MSVC)
-  if(NOT STATIC_LIB)
+  if(NOT ARMADILLO_STATIC_LIB)
     message(STATUS "")
     message(STATUS "*** WARNING: building shared library with MSVC is not supported." )
     message(STATUS "*** WARNING: use manual installation instead; see README for details")
     message(STATUS "")
     
-    set(STATIC_LIB ON)
+    set(ARMADILLO_STATIC_LIB ON)
   endif()
 endif()
 
@@ -259,7 +260,7 @@ message(STATUS "CMAKE_COMPILER_IS_GNUCXX   = ${CMAKE_COMPILER_IS_GNUCXX}"  )
 message(STATUS "")
 message(STATUS "*** options:"                                           )
 message(STATUS "HEADER_ONLY               = ${HEADER_ONLY}"             )
-message(STATUS "STATIC_LIB                = ${STATIC_LIB}"              )
+message(STATUS "ARMADILLO_STATIC_LIB                = ${ARMADILLO_STATIC_LIB}"              )
 message(STATUS "OPENBLAS_PROVIDES_LAPACK  = ${OPENBLAS_PROVIDES_LAPACK}")
 message(STATUS "ALLOW_FLEXIBLAS_LINUX     = ${ALLOW_FLEXIBLAS_LINUX}"   )
 message(STATUS "ALLOW_OPENBLAS_MACOS      = ${ALLOW_OPENBLAS_MACOS}"    )
@@ -571,7 +572,7 @@ message(STATUS "CMAKE_REQUIRED_INCLUDES   = ${CMAKE_REQUIRED_INCLUDES}"  )
 
 
 if(BUILD_WRAPPER)
-  if(STATIC_LIB)
+  if(ARMADILLO_STATIC_LIB)
     set(BUILD_SHARED_LIBS OFF)
   else()
     set(BUILD_SHARED_LIBS ON)
@@ -601,19 +602,19 @@ message(STATUS "CMAKE_INSTALL_BINDIR     = ${CMAKE_INSTALL_BINDIR}"    )
 
 
 # Note that the trailing / character in "include/" is critical
+if(ARMADILLO_INSTALL)
+	install(DIRECTORY ${PROJECT_BINARY_DIR}/tmp/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+	PATTERN ".git" EXCLUDE
+	PATTERN "*.cmake" EXCLUDE
+	PATTERN "*~" EXCLUDE
+	PATTERN "*orig" EXCLUDE
+	)
 
-install(DIRECTORY ${PROJECT_BINARY_DIR}/tmp/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-PATTERN ".git" EXCLUDE
-PATTERN "*.cmake" EXCLUDE
-PATTERN "*~" EXCLUDE
-PATTERN "*orig" EXCLUDE
-)
-
-install(TARGETS armadillo EXPORT ArmadilloLibraryDepends
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-  
+	install(TARGETS armadillo EXPORT ArmadilloLibraryDepends
+	  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()  
 ## smoke test
 
 if(BUILD_SMOKE_TEST)
@@ -639,7 +640,9 @@ else()
   
   message(STATUS "*** generating '${PROJECT_BINARY_DIR}/tmp/misc/armadillo.pc'")
   configure_file(${PROJECT_BINARY_DIR}/tmp/misc/armadillo.pc.in "${PROJECT_BINARY_DIR}/tmp/misc/armadillo.pc" @ONLY)
-  install(FILES "${PROJECT_BINARY_DIR}/tmp/misc/armadillo.pc" DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+  if(ARMADILLO_INSTALL)
+	install(FILES "${PROJECT_BINARY_DIR}/tmp/misc/armadillo.pc" DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+  endif()
 endif()
 
 
@@ -670,10 +673,11 @@ configure_file(${PROJECT_SOURCE_DIR}/cmake_aux/InstallFiles/ArmadilloConfigVersi
   "${PROJECT_BINARY_DIR}/ArmadilloConfigVersion.cmake" @ONLY)
 
 # Install the export set for use with the install-tree
-install(EXPORT ArmadilloLibraryDepends DESTINATION
-  "${CMAKE_INSTALL_DATADIR}/Armadillo/CMake"
-  COMPONENT dev)
-
+if(ARMADILLO_INSTALL)
+	install(EXPORT ArmadilloLibraryDepends DESTINATION
+	  "${CMAKE_INSTALL_DATADIR}/Armadillo/CMake"
+	  COMPONENT dev)
+endif()
 
 ## GLOBAL INSTALL FILES
 # Create ArmadilloConfig.cmake file for the use from the install tree
@@ -693,7 +697,9 @@ configure_file(${PROJECT_SOURCE_DIR}/cmake_aux/InstallFiles/ArmadilloConfigVersi
   "${PROJECT_BINARY_DIR}/InstallFiles/ArmadilloConfigVersion.cmake" @ONLY)
 
 # Install files to be found by cmake users with find_package()
-install(FILES
-  "${PROJECT_BINARY_DIR}/InstallFiles/ArmadilloConfig.cmake"
-  "${PROJECT_BINARY_DIR}/InstallFiles/ArmadilloConfigVersion.cmake"
-  DESTINATION "${ARMADILLO_CMAKE_DIR}" COMPONENT dev)
+if(ARMADILLO_INSTALL)
+	install(FILES
+	  "${PROJECT_BINARY_DIR}/InstallFiles/ArmadilloConfig.cmake"
+	  "${PROJECT_BINARY_DIR}/InstallFiles/ArmadilloConfigVersion.cmake"
+	  DESTINATION "${ARMADILLO_CMAKE_DIR}" COMPONENT dev)
+endif()
